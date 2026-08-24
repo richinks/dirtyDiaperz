@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+automation.log
+incoming/
+stems/
+click/
+cues/
+reaper-projects/
+dist/
+build/
+installer/

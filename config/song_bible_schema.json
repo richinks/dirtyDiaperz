@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "song": { "type": "string" },
+    "artist": { "type": "string" },
+    "recording_bpm": { "type": "number" },
+    "drummer_click_bpm": { "type": "number" },
+    "time_signature": { "type": "string" },
+    "feel": { "type": "string" },
+    "key": { "type": "string" },
+    "duration_seconds": { "type": "number" },
+    "count_in": { "type": "number" },
+    "backing_track": { "type": "boolean" },
+    "voice_cue": { "type": "boolean" },
+    "reaper_status": { "type": "string" },
+    "x32_scene_status": { "type": "string" },
+    "source_sheets": { "type": "string" },
+    "notes": { "type": "string" }
+  },
+  "required": [
+    "song",
+    "artist",
+    "recording_bpm",
+    "time_signature",
+    "key",
+    "duration_seconds"
+  ]
+}

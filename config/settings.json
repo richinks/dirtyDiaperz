@@ -1,0 +1,8 @@
+{
+  "incoming_dir": "incoming",
+  "stems_dir": "stems",
+  "click_dir": "click",
+  "cues_dir": "cues",
+  "rpp_dir": "reaper-projects",
+  "sample_rate": 44100
+}

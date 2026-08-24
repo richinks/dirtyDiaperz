@@ -1,0 +1,16 @@
+{
+  "buses": {
+    "iem": "IEM Bus",
+    "cue": "Cue Bus",
+    "foh": "FOH Bus"
+  },
+  "routing_rules": {
+    "Click": "iem",
+    "Cue": "cue",
+    "Drums": "foh",
+    "Bass": "foh",
+    "Vocals": "foh",
+    "Other": "foh",
+    "Tracking": "foh"
+  }
+}
