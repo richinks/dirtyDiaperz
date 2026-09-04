@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dirty Diapers — Song Production Database</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --surface-color: #1e1e24;
+            --surface-hover: #2a2a35;
+            --text-primary: #f1f1f3;
+            --text-secondary: #a0a0ab;
+            --accent-color: #e54b4b;
+            --accent-hover: #ff5c5c;
+            --border-color: #2e2e38;
+            --badge-high: #2e7d32;
+            --badge-medium: #ed6c02;
+            --badge-low: #757575;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 16px;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 10px 14px;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        @media (min-width: 768px) {
+            input[type="text"] {
+                width: 300px;
+            }
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .btn.primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn.primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stat-card.warning {
+            border-left: 4px solid var(--badge-medium);
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.02);
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            color: var(--text-primary);
+        }
+
+        tbody tr {
+            transition: background-color 0.15s;
+            cursor: pointer;
+        }
+
+        tbody tr:hover {
+            background-color: var(--surface-hover);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.high { background-color: var(--badge-high); color: #fff; }
+        .badge.medium { background-color: var(--badge-medium); color: #fff; }
+        .badge.low { background-color: var(--badge-low); color: #fff; }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: none; border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .close-btn:hover { color: var(--text-primary); }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        #modal-cues-list {
+            list-style-type: none;
+            margin-top: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        #modal-cues-list li {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Dirty Diapers Song Bible</h1>
+            <div class="header-actions">
+                <input type="text" id="search-input" placeholder="Search title, artist, key, cues..." aria-label="Search songs">
+                <button id="export-btn" class="btn secondary">Export</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="stats-bar">
+                <div class="stat-card">
+                    <span class="stat-value" id="total-songs">94</span>
+                    <span class="stat-label">Songs</span>
+                </div>
+                <div class="stat-card warning">
+                    <span class="stat-value" id="pending-decisions">5</span>
+                    <span class="stat-label">Decisions</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">Cloud</span>
+                    <span class="stat-label">JSONBin Sync</span>
+                </div>
+            </section>
+
+            <section class="table-container">
+                <table id="songs-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="title">Song &#x25C5;&#x25BF;</th>
+                            <th data-sort="artist">Artist &#x25C5;&#x25BF;</th>
+                            <th data-sort="bpm">BPM &#x25C5;&#x25BF;</th>
+                            <th data-sort="key">Key &#x25C5;&#x25BF;</th>
+                            <th data-sort="length">Length &#x25C5;&#x25BF;</th>
+                            <th data-sort="cues">Cues &#x25C5;&#x25BF;</th>
+                            <th data-sort="conf">Conf &#x25C5;&#x25BF;</th>
+                        </tr>
+                    </thead>
+                    <tbody id="songs-tbody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <!-- Song Details Modal -->
+        <div id="detail-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <button class="close-btn">&times;</button>
+                <h2 id="modal-song-title">Song Title</h2>
+                <p id="modal-artist-name" class="subtitle">Artist</p>
+                
+                <div class="modal-grid">
+                    <div><strong>BPM:</strong> <span id="modal-bpm"></span></div>
+                    <div><strong>Key:</strong> <span id="modal-key"></span></div>
+                    <div><strong>Length:</strong> <span id="modal-length"></span></div>
+                    <div><strong>Confidence:</strong> <span id="modal-conf"></span></div>
+                </div>
+
+                <h3>Timeline Cues &amp; Source Notes</h3>
+                <ul id="modal-cues-list"></ul>
+
+                <div class="modal-footer">
+                    <button class="btn primary close-modal-action">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fullSongsData = [
+            { title: "2112 (Overture / Temples of Syrinx)", artist: "Rush", bpm: 133, key: "B min", length: "6:45", cues: 8, conf: "LOW", cueNotes: ["Overture section start", "Temples of Syrinx transition at 2:12"] },
+            { title: "Back in Black", artist: "AC/DC", bpm: 94, key: "E maj", length: "4:18", cues: 7, conf: "LOW", cueNotes: ["Intro riff", "Verse 1", "Chorus hook"] },
+            { title: "Barracuda", artist: "Heart", bpm: 137, key: "E min", length: "4:21", cues: 7, conf: "LOW", cueNotes: ["Intro harmonic riff", "Main groove entry"] },
+            { title: "Beast of Burden", artist: "The Rolling Stones", bpm: 100, key: "C# min", length: "4:24", cues: 8, conf: "LOW", cueNotes: ["Editable length arrangement check needed", "Intro guitar lick"] },
+            { title: "Blackstar", artist: "David Bowie", bpm: 97, key: "F# maj", length: "9:58", cues: 5, conf: "LOW", cueNotes: ["Multi-movement layout", "Mid-section tempo shift"] },
+            { title: "Boys are back in Town", artist: "Thin Lizzy", bpm: 80, key: "G maj", length: "4:29", cues: 7, conf: "LOW", cueNotes: ["Twin guitar harmony intro", "Verse 1 groove"] },
+            { title: "Brain Damage / Eclipse", artist: "Pink Floyd", bpm: 66, key: "D maj", length: "5:51", cues: 8, conf: "LOW", cueNotes: ["Continuous flow suite", "Laughter FX intro transition"] },
+            { title: "Breakdown", artist: "Tom Petty", bpm: 114, key: "A min", length: "2:42", cues: 7, conf: "LOW", cueNotes: ["Staccato guitar rhythm", "Vocal harmonies entry"] },
+            { title: "Breathe", artist: "Pink Floyd", bpm: 64, key: "E min", length: "2:47", cues: 5, conf: "LOW", cueNotes: ["Pedal steel intro accents", "Slow tempo feel"] },
+            { title: "Call Me", artist: "Blondie", bpm: 143, key: "D min", length: "3:32", cues: 10, conf: "MEDIUM", cueNotes: ["Driving eighth-note pulse", "Synth hook alignment"] },
+            { title: "Can't Find My Way Home", artist: "Blind Faith", bpm: 88, key: "D maj", length: "3:16", cues: 6, conf: "HIGH", cueNotes: ["Acoustic fingerpicking pattern verified", "Primary source layout"] },
+            { title: "Carry On My Wayward Son", artist: "Kansas", bpm: 127, key: "G maj", length: "5:21", cues: 8, conf: "LOW", cueNotes: ["A cappella intro transition", "Heavy driving riff"] },
+            { title: "Come Together", artist: "The Beatles", bpm: 84, key: "D min", length: "4:20", cues: 16, conf: "HIGH", cueNotes: ["Groove heavily documented", "Bass riff sync points"] },
+            { title: "Comfortably Numb", artist: "Pink Floyd", bpm: 127, key: "B min", length: "6:54", cues: 9, conf: "LOW", cueNotes: ["Chorus shift", "Outro guitar solo cue"] },
+            { title: "Communication Breakdown", artist: "Led Zeppelin", bpm: 175, key: "E maj", length: "2:26", cues: 8, conf: "MEDIUM", cueNotes: ["Fast shuffle tempo", "Guitar break sequence"] },
+            { title: "Crazy on You", artist: "Heart", bpm: 130, key: "A min", length: "4:53", cues: 8, conf: "LOW", cueNotes: ["Acoustic intro barrage", "Electric transition drop"] },
+            { title: "Creep", artist: "Radiohead", bpm: 92, key: "G maj", length: "3:59", cues: 8, conf: "LOW", cueNotes: ["Quiet verse structure", "Aggressive chorus guitar crunch"] },
+            { title: "Crimson and Clover", artist: "Tommy James and the Shondells", bpm: 82, key: "B maj", length: "3:30", cues: 7, conf: "LOW", cueNotes: ["Tremolo vocal effect cue", "Gradual tempo feel"] },
+            { title: "Decode", artist: "Paramore", bpm: 84, key: "Bb min", length: "4:21", cues: 7, conf: "MEDIUM", cueNotes: ["Modern rock sync points", "Dynamic build structure"] },
+            { title: "Do You Feel Like We Do", artist: "Peter Frampton", bpm: 107, key: "C maj", length: "6:13", cues: 7, conf: "LOW", cueNotes: ["Live extended arrangement version selection required", "Talk box solo marker"] },
+            { title: "Don't Fear the Reaper", artist: "Blue Öyster Cult", bpm: 141, key: "A min", length: "5:08", cues: 8, conf: "LOW", cueNotes: ["Cowbell pulse track", "Guitar harmony section"] },
+            { title: "Dreams", artist: "Fleetwood Mac", bpm: 120, key: "C maj", length: "4:18", cues: 8, conf: "LOW", cueNotes: ["Floating vocal rhythm groove", "Steady drum floor"] },
+            { title: "Eminence Front", artist: "The Who", bpm: 98, key: "F min", length: "5:41", cues: 7, conf: "LOW", cueNotes: ["Synthesizer loop rhythm", "Vocal intro markers"] },
+            { title: "Everlong", artist: "Foo Fighters", bpm: 158, key: "B min", length: "4:10", cues: 11, conf: "MEDIUM", cueNotes: ["Intro octave pattern", "Explosive dynamic transitions"] },
+            { title: "Everybody Wants to Rule the World", artist: "Tears for Fears", bpm: 112, key: "G maj", length: "4:11", cues: 7, conf: "LOW", cueNotes: ["Shuffle synth bass line", "Guitar solo bridge"] },
+            { title: "Fly Like an Eagle", artist: "Steve Miller Band", bpm: 100, key: "A min", length: "4:42", cues: 8, conf: "LOW", cueNotes: ["Album vs single length variation decision required", "Synth sound effect intro"] },
+            { title: "Georgy Porgy", artist: "Toto", bpm: 97, key: "B min", length: "4:08", cues: 8, conf: "LOW", cueNotes: ["Smooth R&B groove mapping", "Vocal harmony cues"] },
+            { title: "Get Down On It", artist: "Kool and the Gang", bpm: 110, key: "E min", length: "3:33", cues: 7, conf: "LOW", cueNotes: ["Dance rhythm arrangement length confirmation needed", "Horn section hits"] },
+            { title: "Gimme Shelter", artist: "The Rolling Stones", bpm: 118, key: "C# min", length: "4:30", cues: 13, conf: "LOW", cueNotes: ["Acoustic guitar intro tremolo", "Vocal wailing dynamic peaks"] },
+            { title: "Godzilla", artist: "Blue Öyster Cult", bpm: 92, key: "E maj", length: "3:41", cues: 8, conf: "LOW", cueNotes: ["Heavy riff main groove", "Bass solo break marker"] },
+            { title: "Green Onions", artist: "Booker T. & the M.G.'s", bpm: 137, key: "F min", length: "2:53", cues: 5, conf: "LOW", cueNotes: ["Hammond organ blues shuffle", "Classic breakdown"] },
+            { title: "Heartbreaker", artist: "Pat Benatar", bpm: 156, key: "Db maj", length: "3:27", cues: 9, conf: "MEDIUM", cueNotes: ["High energy rock tempo", "Guitar riff sync points"] },
+            { title: "Hells Bells", artist: "AC/DC", bpm: 106, key: "E min", length: "5:12", cues: 10, conf: "LOW", cueNotes: ["Tolling bell intro freeform entry point decision needed", "Guitar riff drop"] },
+            { title: "Here Comes My Girl", artist: "Tom Petty", bpm: 104, key: "E maj", length: "4:24", cues: 8, conf: "LOW", cueNotes: ["Spoken-word style verse rhythm", "Melodic chorus swell"] },
+            { title: "Higher Ground", artist: "Red Hot Chili Peppers", bpm: 140, key: "E min", length: "3:22", cues: 8, conf: "LOW", cueNotes: ["Funky slap bass groove", "Fast tempo sync"] },
+            { title: "Hold on Loosely", artist: "38 Special", bpm: 127, key: "A maj", length: "4:40", cues: 7, conf: "LOW", cueNotes: ["Southern rock dual guitar intro", "Anthemic chorus"] },
+            { title: "Hold the Line", artist: "Toto", bpm: 97, key: "F# min", length: "3:57", cues: 8, conf: "MEDIUM", cueNotes: ["Iconic triplet piano riff sync", "Driving drum beat"] },
+            { title: "Home at Last", artist: "Steely Dan", bpm: 127, key: "G min", length: "5:32", cues: 8, conf: "LOW", cueNotes: ["Purdie shuffle tempo variant choice required", "Horn accents"] },
+            { title: "Hook", artist: "Blues Traveler", bpm: 166, key: "A maj", length: "4:49", cues: 8, conf: "MEDIUM", cueNotes: ["Fast harmonica melody sync", "Rapid vocal phrasing"] },
+            { title: "Hotel California", artist: "Eagles", bpm: 75, key: "B min", length: "6:30", cues: 11, conf: "LOW", cueNotes: ["Acoustic intro arpeggios", "Twin guitar harmony outro"] },
+            { title: "House of the Rising Sun", artist: "The Animals", bpm: 117, key: "A min", length: "4:30", cues: 7, conf: "LOW", cueNotes: ["Arpeggiated organ/guitar pattern", "Waltz-feel rock pulse"] },
+            { title: "I Feel Fine", artist: "The Beatles", bpm: 90, key: "G maj", length: "2:25", cues: 7, conf: "LOW", cueNotes: ["Feedback intro marker", "Driving upbeat rhythm"] },
+            { title: "I Shot the Sheriff", artist: "Eric Clapton", bpm: 96, key: "G min", length: "4:23", cues: 11, conf: "LOW", cueNotes: ["Reggae groove sync", "Guitar solo transitions"] },
+            { title: "I Think About You All the Time", artist: "Deftones", bpm: 136, key: "C maj", length: "4:09", cues: 7, conf: "LOW", cueNotes: ["Atmospheric guitar layers", "Heavy dynamic contrast"] },
+            { title: "I Will Survive", artist: "Gloria Gaynor", bpm: 117, key: "A min", length: "3:18", cues: 8, conf: "MEDIUM", cueNotes: ["Disco string arrangement cues", "Driving four-on-the-floor"] },
+            { title: "I'm Your Captain", artist: "Grand Funk Railroad", bpm: 97, key: "G maj", length: "5:31", cues: 8, conf: "LOW", cueNotes: ["Long suite format layout check needed", "Orchestral fade section"] },
+            { title: "Immigrant Song", artist: "Led Zeppelin", bpm: 113, key: "B maj", length: "2:26", cues: 6, conf: "LOW", cueNotes: ["Galloping triplet rhythm", "A cappella scream intro"] },
+            { title: "Island in the Sun", artist: "Weezer", bpm: 114, key: "G maj", length: "3:20", cues: 7, conf: "MEDIUM", cueNotes: ["Acoustic strumming pattern", "Melodic indie guitar pop cue"] },
+            { title: "Jailbreak", artist: "Thin Lizzy", bpm: 145, key: "Eb maj", length: "4:01", cues: 7, conf: "LOW", cueNotes: ["Spoken intro story setup", "Heavy twin riff drop"] },
+            { title: "Jessie's Girl", artist: "Rick Springfield", bpm: 132, key: "D maj", length: "3:14", cues: 9, conf: "MEDIUM", cueNotes: ["Upbeat power pop rhythm", "Guitar hook sync"] },
+            { title: "Jesus Just Left Chicago", artist: "ZZ Top", bpm: 72, key: "G maj", length: "3:35", cues: 6, conf: "LOW", cueNotes: ["Slow blues shuffle groove", "Texas guitar tone cues"] },
+            { title: "Jumpin' Jack Flash", artist: "The Rolling Stones", bpm: 137, key: "Eb maj", length: "3:43", cues: 8, conf: "LOW", cueNotes: ["Acoustic guitar dirty tuning bed", "Driving rock beat"] },
+            { title: "Just Got Paid", artist: "ZZ Top", bpm: 99, key: "E min", length: "4:27", cues: 7, conf: "LOW", cueNotes: ["Heavy slide guitar riff", "Stomp box groove"] },
+            { title: "Just What I Needed", artist: "The Cars", bpm: 127, key: "E maj", length: "3:46", cues: 7, conf: "LOW", cueNotes: ["New wave synth line intro", "Driving guitar rhythm"] },
+            { title: "Kashmir", artist: "Led Zeppelin", bpm: 80, key: "D min", length: "8:37", cues: 8, conf: "LOW", cueNotes: ["Polymetric feel conflict resolution required", "Orchestral brass breakdown"] },
+            { title: "Keep on Rockin' in the Free World", artist: "Neil Young", bpm: 131, key: "E min", length: "4:40", cues: 8, conf: "LOW", cueNotes: ["Distorted grunge acoustic crunch", "Anthemic chorus buildup"] },
+            { title: "Kiss Me", artist: "Sixpence None the Richer", bpm: 96, key: "Eb maj", length: "3:28", cues: 7, conf: "MEDIUM", cueNotes: ["Acoustic pop ballad groove", "Gentle brush drum pattern"] },
+            { title: "Linger", artist: "The Cranberries", bpm: 96, key: "G maj", length: "4:34", cues: 8, conf: "LOW", cueNotes: ["Doo-wop guitar progression", "Dreamy vocal phrasing"] },
+            { title: "Listen to Her Heart", artist: "Tom Petty", bpm: 125, key: "A maj", length: "3:05", cues: 7, conf: "LOW", cueNotes: ["Fast jangly guitar rhythm", "Piano chord accents"] },
+            { title: "Long Train Runnin'", artist: "The Doobie Brothers", bpm: 117, key: "G min", length: "3:27", cues: 9, conf: "LOW", cueNotes: ["Acoustic rhythm strumming chug", "Harmonica break"] },
+            { title: "Love Is a Long Road", artist: "Tom Petty", bpm: 116, key: "B min", length: "4:08", cues: 13, conf: "LOW", cueNotes: ["Driving synthesizer bassline bed", "Heartbreakers rock groove"] },
+            { title: "Magic Man", artist: "Heart", bpm: 103, key: "G min", length: "5:28", cues: 8, conf: "LOW", cueNotes: ["Synthesizer intro soundscape", "Heavy classic rock breakdown"] },
+            { title: "Mary Jane's Last Dance", artist: "Tom Petty", bpm: 170, key: "G min", length: "4:33", cues: 8, conf: "LOW", cueNotes: ["Full vs half-time tempo choice (170 vs 85 BPM) required", "Harmonica intro cue"] },
+            { title: "Movin' On", artist: "Bad Company", bpm: 118, key: "C maj", length: "3:21", cues: 7, conf: "LOW", cueNotes: ["Straightahead rock drive", "Bluesy guitar fills"] },
+            { title: "Mr. Brightside", artist: "The Killers", bpm: 148, key: "Db maj", length: "3:43", cues: 10, conf: "MEDIUM", cueNotes: ["Fast synth-rock arpeggio intro", "High energy beat"] },
+            { title: "Ohio", artist: "Neil Young", bpm: 79, key: "D min", length: "2:58", cues: 6, conf: "LOW", cueNotes: ["Protest song acoustic groove", "Electric lead lines"] },
+            { title: "Peg", artist: "Steely Dan", bpm: 117, key: "G maj", length: "3:57", cues: 7, conf: "LOW", cueNotes: ["Complex studio pop arrangement groove", "Backing vocal harmonies"] },
+            { title: "Plush", artist: "Stone Temple Pilots", bpm: 145, key: "G min", length: "5:10", cues: 8, conf: "LOW", cueNotes: ["Acoustic chord progression", "Alternative rock vocal styling"] },
+            { title: "Pretzel Logic", artist: "Steely Dan", bpm: 96, key: "A min", length: "4:28", cues: 8, conf: "LOW", cueNotes: ["Blues shuffle tempo feel", "Jazz-rock guitar solo"] },
+            { title: "Promises in the Dark", artist: "Pat Benatar", bpm: 158, key: "F maj", length: "4:12", cues: 9, conf: "LOW", cueNotes: ["Piano and synth atmospheric intro", "Driving rock beat"] },
+            { title: "Ramble On", artist: "Led Zeppelin", bpm: 99, key: "A maj", length: "4:35", cues: 8, conf: "LOW", cueNotes: ["Acoustic bongo/drum beat intro", "Heavy electric chorus drop"] },
+            { title: "Ready for Love", artist: "Bad Company", bpm: 129, key: "G maj", length: "5:02", cues: 7, conf: "LOW", cueNotes: ["Power ballad organ intro", "Slow burning guitar solo"] },
+            { title: "Rebel Yell", artist: "Billy Idol", bpm: 166, key: "E min", length: "4:47", cues: 8, conf: "LOW", cueNotes: ["Full vs half-time tempo choice required", "Synth guitar intro feedback"] },
+            { title: "Rhiannon", artist: "Fleetwood Mac", bpm: 129, key: "A min", length: "4:13", cues: 6, conf: "MEDIUM", cueNotes: ["Pounding piano intro chord", "Mystical vocal rhythm groove"] },
+            { title: "Rock 'n Roll Fantasy", artist: "Bad Company", bpm: 112, key: "D maj", length: "4:36", cues: 7, conf: "LOW", cueNotes: ["Melodic classic rock verse", "Anthemic chorus hook"] },
+            { title: "Santa Monica", artist: "Everclear", bpm: 100, key: "G maj", length: "3:12", cues: 7, conf: "LOW", cueNotes: ["Clean guitar intro riff", "Alternative rock distortion build"] },
+            { title: "Say It Ain't So", artist: "Weezer", bpm: 76, key: "Eb maj", length: "4:18", cues: 7, conf: "LOW", cueNotes: ["Full vs half-time tempo choice required", "Clean distinctive arpeggio intro"] },
+            { title: "Secret Agent Man", artist: "Johnny Rivers", bpm: 163, key: "E min", length: "3:05", cues: 8, conf: "LOW", cueNotes: ["Spy-guitar surf rock riff", "Fast driving beat"] },
+            { title: "Smells Like Teen Spirit", artist: "Nirvana", bpm: 117, key: "F min", length: "5:01", cues: 9, conf: "LOW", cueNotes: ["Distorted power chord intro", "Loud-quiet-loud dynamic shift"] },
+            { title: "So Lonely", artist: "The Police", bpm: 77, key: "G maj", length: "4:48", cues: 7, conf: "MEDIUM", cueNotes: ["Reggae-rock hybrid groove", "Upbeat guitar skank"] },
+            { title: "Stairway to Heaven", artist: "Led Zeppelin", bpm: 71, key: "A min", length: "8:02", cues: 15, conf: "HIGH", cueNotes: ["Tempo naturally accelerates from ~71 to ~102 BPM across song (requires tempo ramp)", "Acoustic intro to heavy outro"] },
+            { title: "Substitute", artist: "The Who", bpm: 136, key: "D maj", length: "3:47", cues: 8, conf: "LOW", cueNotes: ["Acoustic windmill strumming feel", "Energetic mod-rock beat"] },
+            { title: "Summer of '69", artist: "Bryan Adams", bpm: 139, key: "D maj", length: "3:37", cues: 9, conf: "MEDIUM", cueNotes: ["Upbeat opening guitar chord riff", "Driving straight rock tempo"] },
+            { title: "Sweet Emotion", artist: "Aerosmith", bpm: 99, key: "A maj", length: "4:34", cues: 7, conf: "LOW", cueNotes: ["Talk-box intro freeform entry point decision needed", "Heavy bassline groove"] },
+            { title: "Time", artist: "Pink Floyd", bpm: 120, key: "A maj", length: "7:03", cues: 8, conf: "LOW", cueNotes: ["Clock sound collage / alarm intro freeform entry decision needed", "Tom-heavy drum groove"] },
+            { title: "Who Are You", artist: "The Who", bpm: 156, key: "A maj", length: "6:22", cues: 9, conf: "LOW", cueNotes: ["Synthesizer sequencer rhythm bed", "Heavy drum breakdown accents"] },
+            { title: "Wish You Were Here", artist: "Pink Floyd", bpm: 122, key: "G maj", length: "5:21", cues: 8, conf: "LOW", cueNotes: ["Radio filter acoustic intro", "Singalong acoustic ballad layout"] },
+            { title: "Won't Back Down", artist: "Tom Petty", bpm: 114, key: "G maj", length: "2:58", cues: 10, conf: "MEDIUM", cueNotes: ["Stomp-and-clap acoustic rhythm bed", "Anthemic chorus power chords"] },
+            { title: "Yellow Ledbetter", artist: "Pearl Jam", bpm: 71, key: "E maj", length: "5:04", cues: 6, conf: "LOW", cueNotes: ["Hendrix-style clean blues ballad feel", "Slow spacious tempo"] },
+            { title: "You Shook Me All Night Long", artist: "AC/DC", bpm: 128, key: "G maj", length: "3:32", cues: 7, conf: "LOW", cueNotes: ["Classic opening guitar riff", "Driving hard rock rhythm"] },
+            { title: "Zombie", artist: "The Cranberries", bpm: 84, key: "E min", length: "5:06", cues: 7, conf: "MEDIUM", cueNotes: ["Full vs half-time tempo choice required", "Heavy grunge distortion contrast"] }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let songsData = JSON.parse(localStorage.getItem('dd_songs_data')) || [...fullSongsData];
+            let currentSort = { column: 'title', ascending: true };
+
+            // JSONBin Credentials Pre-configured
+            const BIN_ID = '6a85c5bada38895dfef78196';
+            const API_KEY = '$2a$10$Qx5EIx9bCnzYeTS/niHQneTsF9ZTx4Fz/x83gIczflv//YDMyxmiC';
+
+            async function syncWithJSONBin() {
+                try {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                        headers: { 'X-Master-Key': API_KEY }
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.record && Array.isArray(json.record) && json.record.length > 0) {
+                            songsData = json.record;
+                            saveData(false);
+                            renderTable(songsData);
+                        }
+                    }
+                } catch (err) {
+                    console.info('Offline or sync deferred, using local cache.');
+                }
+            }
+
+            async function pushToJSONBin() {
+                try {
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': API_KEY
+                        },
+                        body: JSON.stringify(songsData)
+                    });
+                } catch (err) {
+                    console.warn('Failed to push update to cloud JSONBin.');
+                }
+            }
+
+            const searchInput = document.getElementById('search-input');
+            const songsTbody = document.getElementById('songs-tbody');
+            
+            const modal = document.getElementById('detail-modal');
+            const closeModalBtn = modal.querySelector('.close-btn');
+            const closeModalAction = modal.querySelector('.close-modal-action');
+
+            function saveData(syncCloud = true) {
+                localStorage.setItem('dd_songs_data', JSON.stringify(songsData));
+                document.getElementById('total-songs').textContent = songsData.length;
+                if (syncCloud) {
+                    pushToJSONBin();
+                }
+            }
+
+            function renderTable(data) {
+                songsTbody.innerHTML = '';
+                data.forEach((song) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${escapeHtml(song.title)}</strong></td>
+                        <td>${escapeHtml(song.artist)}</td>
+                        <td>${song.bpm}</td>
+                        <td>${escapeHtml(song.key)}</td>
+                        <td>${escapeHtml(song.length)}</td>
+                        <td>${song.cues}</td>
+                        <td><span class="badge ${song.conf.toLowerCase()}">${song.conf}</span></td>
+                    `;
+                    tr.addEventListener('click', () => openModal(song));
+                    songsTbody.appendChild(tr);
+                });
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const filtered = songsData.filter(s => 
+                    s.title.toLowerCase().includes(query) || 
+                    s.artist.toLowerCase().includes(query) || 
+                    s.key.toLowerCase().includes(query) ||
+                    s.bpm.toString().includes(query) ||
+                    s.length.toLowerCase().includes(query) ||
+                    s.conf.toLowerCase().includes(query) ||
+                    (s.cueNotes && s.cueNotes.some(note => note.toLowerCase().includes(query)))
+                );
+                renderTable(filtered);
+            });
+
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const col = th.getAttribute('data-sort');
+                    if (currentSort.column === col) {
+                        currentSort.ascending = !currentSort.ascending;
+                    } else {
+                        currentSort.column = col;
+                        currentSort.ascending = true;
+                    }
+
+                    songsData.sort((a, b) => {
+                        let valA = a[col];
+                        let valB = b[col];
+                        if (typeof valA === 'string') {
+                            valA = valA.toLowerCase();
+                            valB = valB.toLowerCase();
+                        }
+                        if (valA < valB) return currentSort.ascending ? -1 : 1;
+                        if (valA > valB) return currentSort.ascending ? 1 : -1;
+                        return 0;
+                    });
+                    
+                    const query = searchInput.value.toLowerCase().trim();
+                    if (query) {
+                        searchInput.dispatchEvent(new Event('input'));
+                    } else {
+                        renderTable(songsData);
+                    }
+                });
+            });
+
+            function openModal(song) {
+                document.getElementById('modal-song-title').textContent = song.title;
+                document.getElementById('modal-artist-name').textContent = song.artist;
+                document.getElementById('modal-bpm').textContent = song.bpm;
+                document.getElementById('modal-key').textContent = song.key;
+                document.getElementById('modal-length').textContent = song.length;
+                document.getElementById('modal-conf').textContent = song.conf;
+
+                const cuesList = document.getElementById('modal-cues-list');
+                cuesList.innerHTML = '';
+                if (song.cueNotes && song.cueNotes.length > 0) {
+                    song.cueNotes.forEach(note => {
+                        const li = document.createElement('li');
+                        li.textContent = note;
+                        cuesList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No detailed timeline event notes loaded for this entry.';
+                    cuesList.appendChild(li);
+                }
+
+                modal.style.display = 'flex';
+            }
+
+            closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+            closeModalAction.addEventListener('click', () => modal.style.display = 'none');
+            window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+            document.getElementById('export-btn').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(songsData, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", "dirty_diapers_backup.json");
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            });
+
+            function escapeHtml(str) {
+                return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            renderTable(songsData);
+            document.getElementById('total-songs').textContent = songsData.length;
+            syncWithJSONBin();
+        });
+    </script>
+</body>
+</html>
